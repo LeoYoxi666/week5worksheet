@@ -1,0 +1,38 @@
+CHIP A6Q2<201801673> {
+    IN a, b, c, d;
+    OUT f;
+
+    PARTS:
+    // Part 1: Implement (NOT a AND NOT b AND NOT d AND (NOT c OR c))
+    Not(in=a, out=na);
+    Not(in=b, out=nb);
+    Not(in=d, out=nd);
+    And(a=na, b=nb, out=na_nb);
+    And(a=na_nb, b=nd, out=na_nb_nd);
+
+    // (NOT c OR c) is always true, but we still include branches for both cases for clarity
+    Not(in=c, out=nc);
+    And(a=na_nb_nd, b=nc, out=term1a);
+    And(a=na_nb_nd, b=c, out=term1b);
+    Or(a=term1a, b=term1b, out=term1);
+
+    // Part 2: Implement (NOT a AND b AND NOT c AND d)
+    And(a=na, b=b, out=na_b);
+    And(a=na_b, b=nc, out=na_b_nc);
+    And(a=na_b_nc, b=d, out=term2);
+
+    // Part 3: Implement (a AND NOT b AND c AND d)
+    And(a=a, b=nb, out=a_nb);
+    And(a=a_nb, b=c, out=a_nb_c);
+    And(a=a_nb_c, b=d, out=term3);
+
+    // Part 4: Implement (a AND b AND NOT c AND NOT d)
+    And(a=a, b=b, out=a_b);
+    And(a=a_b, b=nc, out=a_b_nc);
+    And(a=a_b_nc, b=nd, out=term4);
+
+    // Final result: OR all parts together
+    Or(a=term1, b=term2, out=partial1);
+    Or(a=partial1, b=term3, out=partial2);
+    Or(a=partial2, b=term4, out=f);
+}
